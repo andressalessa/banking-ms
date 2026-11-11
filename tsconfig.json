@@ -39,6 +39,9 @@
       "path": "./apps/accounts/tsconfig.app.json"
     },
     {
+      "path": "./apps/transactions/tsconfig.app.json"
+    },
+    {
       "path": "./tsconfig.spec.json"
     }
   ]

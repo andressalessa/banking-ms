@@ -29,5 +29,17 @@
         "./libs/core/src/*"
       ]
     }
-  }
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/banking-ms/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/accounts/tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
 }

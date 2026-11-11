@@ -1,12 +1,22 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/banking-ms/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "builder": "rspack"
+    "builder": "rspack",
+    "tsConfigPath": "apps/banking-ms/tsconfig.app.json"
   },
   "projects": {
+    "accounts": {
+      "type": "application",
+      "root": "apps/accounts",
+      "entryFile": "main",
+      "sourceRoot": "apps/accounts/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/accounts/tsconfig.app.json"
+      }
+    },
     "core": {
       "type": "library",
       "root": "libs/core",
@@ -16,5 +26,7 @@
         "tsConfigPath": "libs/core/tsconfig.lib.json"
       }
     }
-  }
+  },
+  "monorepo": true,
+  "root": "apps/accounts"
 }

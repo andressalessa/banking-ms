@@ -1,16 +1,14 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "isolatedModules": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2023",
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
@@ -22,10 +20,10 @@
       "node"
     ],
     "paths": {
-      "core/core": [
+      "@core": [
         "./libs/core/src/index.ts"
       ],
-      "core/core/*": [
+      "@core/*": [
         "./libs/core/src/*"
       ]
     }
@@ -33,13 +31,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/banking-ms/tsconfig.app.json"
-    },
-    {
       "path": "./apps/accounts/tsconfig.app.json"
     },
     {
       "path": "./apps/transactions/tsconfig.app.json"
+    },
+    {
+      "path": "./libs/core/tsconfig.lib.json"
     },
     {
       "path": "./tsconfig.spec.json"

@@ -2,7 +2,6 @@ import { AggregateRoot } from '../entities/aggregate-root';
 import type { UniqueEntityID } from '../entities/unique-entity-id';
 import type { DomainEvent } from './domain-event';
 import { DomainEvents } from './domain-events';
-import { jest } from '@jest/globals';
 
 class CustomAggregateCreated implements DomainEvent {
   public ocurredAt: Date;
@@ -29,7 +28,7 @@ class CustomAggregate extends AggregateRoot<null> {
 
 describe('domain events', () => {
   it('should be able to dispatch and listen to events', async () => {
-    const callbackSpy = jest.fn<(event: DomainEvent) => void>();
+    const callbackSpy = vi.fn<(event: DomainEvent) => void>();
 
     DomainEvents.register(callbackSpy, CustomAggregateCreated.name);
 

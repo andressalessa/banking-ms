@@ -10,8 +10,9 @@ export * from './events/domain-event';
 export * from './events/domain-events';
 export * from './events/event-handler';
 
-// Types & Functional
+// Types
 export * from './types/optional';
-export * from './either';
 
+// Errors
+export * from './errors/domain-error';
 export * from './errors/use-case-error';

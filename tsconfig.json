@@ -25,6 +25,18 @@
       ],
       "@core/*": [
         "./libs/core/src/*"
+      ],
+      "@accounts": [
+        "./apps/accounts/src/index.ts"
+      ],
+      "@accounts/*": [
+        "./apps/accounts/src/*"
+      ],
+      "@transactions": [
+        "./apps/transactions/src/index.ts"
+      ],
+      "@transactions/*": [
+        "./apps/transactions/src/*"
       ]
     }
   },

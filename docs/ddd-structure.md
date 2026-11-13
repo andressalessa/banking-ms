@@ -8,8 +8,28 @@
 
 ## Bounded contexts
 
-### Account
+### Account (AggregateRoot)
+```
+holder: AccountHolder <name, cpf: Cpf, email: Email>
+balance: Money ?
+createdAt: Date
+updatedAt: Date | null
+```
 
+#### Se der tempo:
+```
+address: Address
+```
+
+
+#### Value-Objects
+```
+AccountHolder {
+  name: string, 
+  cpf: Cpf, 
+  email: Email, 
+}
+```
 
 ### Transactions
 

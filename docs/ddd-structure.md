@@ -57,6 +57,29 @@ meu-monorepo/
 ├── package.json
 └── tsconfig.json          # Paths configurados para importar @core ou @shared
 
+Maior detalhe:
+
+apps/accounts/src/
+├── domain/                   <-- 1. Camada Mais Interna (Regras de Negócio Puras)
+│   ├── entities/             # Account (Aggregate Root)
+│   ├── enums/                # AccountStatus (ACTIVE, BLOCKED...)
+│   ├── errors/               # InvalidCpfError, InsufficientBalanceError
+│   ├── events/               # AccountCreatedEvent, BalanceDebitedEvent...
+│   ├── repositories/         # Contratos/Interfaces (ex: AccountsRepository)
+│   └── value-objects/        # Cpf, AccountHolder
+│
+├── application/              <-- 2. Camada de Casos de Uso (Orquestração)
+│   └── use-cases/            # CreateAccountUseCase, GetAccountBalanceUseCase...
+│
+├── infra/                    <-- 3. Camada Mais Externa (Frameworks, Banco, HTTP, Kafka)
+│   ├── database/             # Implementação real do repositório (TypeORM/Prisma), Event Store
+│   ├── http/                 # Controllers, DTOs, Exception Filters, Health Check
+│   └── messaging/            # Producers/Consumers Kafka, Temporal Workers
+│
+├── accounts.module.ts        # Módulo raiz do NestJS que conecta todas as peças
+└── main.ts                   # Ponto de entrada da aplicação
+
+
 tsconfig.json
 
 {

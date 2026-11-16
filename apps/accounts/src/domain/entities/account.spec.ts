@@ -1,5 +1,5 @@
 import { UniqueEntityID } from '@core/entities/unique-entity-id';
-import { AccountCreated } from '../events/account-created';
+import { AccountCreatedEvent } from '../events/account-created-event';
 import { AccountHolder } from '../value-objects/account-holder';
 import { Cpf } from '../value-objects/cpf';
 import { Email } from '../value-objects/email';
@@ -24,7 +24,7 @@ test('create an account with holder, zero balance and timestamps', () => {
   expect(account.createdAt).toBeInstanceOf(Date);
   expect(account.updatedAt).toBeNull();
   expect(account.domainEvents).toHaveLength(1);
-  expect(account.domainEvents[0]).toBeInstanceOf(AccountCreated);
+  expect(account.domainEvents[0]).toBeInstanceOf(AccountCreatedEvent);
 });
 
 test('keep an informed balance when creating an account', () => {

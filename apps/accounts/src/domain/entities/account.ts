@@ -1,7 +1,7 @@
 import { AggregateRoot } from '@core/entities/aggregate-root';
 import type { UniqueEntityID } from '@core/entities/unique-entity-id';
 import type { Optional } from '@core/types/optional';
-import { AccountCreated } from '../events/account-created';
+import { AccountCreatedEvent } from '../events/account-created-event';
 import type { AccountHolder } from '../value-objects/account-holder';
 import { Money } from '../value-objects/money';
 import { AccountStatus } from '../enums/account-status';
@@ -53,7 +53,7 @@ export class Account extends AggregateRoot<AccountProps> {
     const isNewAccount = !id;
 
     if (isNewAccount) {
-      account.addDomainEvent(new AccountCreated(account));
+      account.addDomainEvent(new AccountCreatedEvent(account));
     }
 
     return account;

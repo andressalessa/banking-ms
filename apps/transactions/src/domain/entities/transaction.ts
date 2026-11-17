@@ -2,6 +2,8 @@ import { AggregateRoot } from '@core/entities/aggregate-root';
 import { UniqueEntityID } from '@core/entities/unique-entity-id';
 import { TransactionStatus } from '../enums/transaction-status';
 import { TransactionType } from '../enums/transaction-type';
+import { CreditPerformedEvent } from '../events/credit-performed-event';
+import { DebitPerformedEvent } from '../events/debit-performed-event';
 import { InvalidTransactionStatusTransitionError } from '../errors/invalid-transaction-status-transition-error';
 import { IdempotencyKey } from '../value-objects/idempotency-key';
 import { Money } from '../value-objects/money';
@@ -93,8 +95,21 @@ export class Transaction extends AggregateRoot<TransactionProps> {
     return new Transaction(props, new UniqueEntityID(id.value));
   }
 
+  /** Conclui a transação e emite o evento de integração correspondente ao tipo. */
   complete() {
     this.transitionTo(TransactionStatus.COMPLETED);
+
+    const payload = {
+      transactionId: this.id.toString(),
+      accountId: this.props.accountId,
+      amount: this.props.amount.amount,
+    };
+
+    this.addDomainEvent(
+      this.props.type === TransactionType.DEBIT
+        ? new DebitPerformedEvent(payload, this.nextVersion())
+        : new CreditPerformedEvent(payload, this.nextVersion()),
+    );
   }
 
   fail() {

@@ -50,6 +50,16 @@ export class DomainEvents {
     }
   }
 
+  // descarta os eventos pendentes (ex.: persistência falhou)
+  public static discardEventsForAggregate(id: UniqueEntityID): void {
+    const aggregate = this.findMarkedAggregateByID(id);
+
+    if (aggregate) {
+      aggregate.clearEvents();
+      this.removeAggregateFromMarkedDispatchList(aggregate);
+    }
+  }
+
   public static register(
     callback: DomainEventCallback,
     eventType: string,

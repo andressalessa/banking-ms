@@ -13,7 +13,7 @@ Separei dois tipos de evento, cada um com um dono:
 
 1. **Eventos de agregado (Event Sourcing) — dono: `accounts`.**
    - `accounts` é o único serviço com acesso ao Event Store (`account_events`, tabela append-only no `accounts_db`) e aos snapshots.
-   - Eventos: `AccountCreated`, `BalanceCredited`, `BalanceDebited`. O estado de `Account` é derivado exclusivamente do replay (com snapshot) desses eventos.
+   - Eventos: `AccountCreated`, `BalanceCredited`, `BalanceDebited`, `AccountBlocked`, `AccountActivated` (toda mudança de estado da conta é um evento, senão o replay a perderia). O estado de `Account` é derivado exclusivamente do replay (com snapshot) desses eventos.
    - `Account` apenas aplica `+/-` ao saldo e protege invariantes (saldo não negativo, conta ativa). Não conhece o conceito de transação, tipo, motivo ou saga.
 
 2. **Eventos de integração (Kafka) — dono: `transactions`.**
@@ -28,7 +28,7 @@ Separei dois tipos de evento, cada um com um dono:
 Fluxo resumido do débito:
 `transactions` → (REST/Temporal) → `accounts` (valida invariantes, grava `BalanceDebited` no event store) → resposta com saldo resultante → `transactions` (registra a transação + outbox) → Kafka (`DebitPerformed`) → consumidor de extrato (read model).
 
-5. **Dado sensível (CPF) no evento de agregado.** O `AccountCreated` mantém o CPF em claro porque o estado de `Account` é derivado só dos eventos (mascarar ou hashear impediria reconstruir o `Cpf` no replay e quebraria `findByCpf`/unicidade). O risco é contido assim:
+5. **Dados pessoais (CPF e e-mail) no evento de agregado.** O `AccountCreated` mantém o CPF e o e-mail em claro porque o estado de `Account` é derivado só dos eventos (mascarar ou hashear impediria reconstruir o titular (`Cpf`, `Email`) no replay e quebraria `findByCpf`/unicidade). O risco é contido assim:
    - o evento de agregado vive apenas no `accounts_db` e nunca é publicado no Kafka nem acessado por outro serviço;
    - os eventos de integração (`DebitPerformed`/`CreditPerformed`) não incluem CPF nem outros dados cadastrais;
    - logs não devem imprimir o payload de `AccountCreated`.
@@ -43,6 +43,6 @@ Fluxo resumido do débito:
 - **Positivas:** responsabilidades claras (KISS/SRP) e banco isolado por serviço; replay e snapshot restritos ao agregado `Account`; contrato público estável e evolutivo; `transactions` não precisa conhecer a estrutura interna da conta.
 - **Negativas / Riscos:**
   - Existem dois modelos de evento e é preciso manter o mapeamento entre eles, o que gera mais código e documentação.
-  - **Falha parcial:** `accounts` pode debitar e `transactions` cair antes de registrar/publicar. Mitigação: saga Temporal com activities idempotentes e compensação (RES-02) e Transactional Outbox (ES-04).
+  - **Falha parcial:** `accounts` pode debitar e `transactions` cair antes de registrar/publicar. Mitigação: saga Temporal com activities idempotentes e compensação e Transactional Outbox.
   - **Consistência eventual:** o extrato só reflete o débito depois da projeção assíncrona (a documentar no ADR de consistência eventual).
   - O saldo resultante precisa ser devolvido por `accounts` para compor o evento de integração, o que cria uma dependência de contrato REST.

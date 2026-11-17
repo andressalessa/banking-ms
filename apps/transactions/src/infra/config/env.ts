@@ -21,6 +21,15 @@ export class Env {
   @IsUrl({ protocols: ['postgres', 'postgresql'], require_tld: false })
   @IsNotEmpty()
   TRANSACTIONS_DATABASE_URL: string;
+
+  @IsUrl({ protocols: ['http', 'https'], require_tld: false })
+  @IsOptional()
+  ACCOUNTS_SERVICE_URL: string = 'http://localhost:3001';
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  ACCOUNTS_REQUEST_TIMEOUT_MS: number = 3000;
 }
 
 export function validateEnv(config: Record<string, unknown>): Env {

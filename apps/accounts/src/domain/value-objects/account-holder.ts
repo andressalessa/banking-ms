@@ -1,4 +1,5 @@
 import { ValueObject } from '@core/entities/value-object';
+import { InvalidHolderNameError } from '../errors/invalid-holder-name-error';
 import type { Cpf } from './cpf';
 import { Email } from './email';
 
@@ -7,6 +8,8 @@ export interface AccountHolderProps {
   cpf: Cpf;
   email: Email;
 }
+
+const MIN_NAME_LENGTH = 3;
 
 export class AccountHolder extends ValueObject<AccountHolderProps> {
   get fullName() {
@@ -26,6 +29,18 @@ export class AccountHolder extends ValueObject<AccountHolderProps> {
   }
 
   static create(props: AccountHolderProps) {
-    return new AccountHolder(props);
+    const fullName = typeof props.fullName === 'string' ? props.fullName.trim() : '';
+
+    if (!fullName) {
+      throw new InvalidHolderNameError();
+    }
+
+    if (fullName.length < MIN_NAME_LENGTH) {
+      throw new InvalidHolderNameError(
+        `Holder name must have at least ${MIN_NAME_LENGTH} characters.`,
+      );
+    }
+
+    return new AccountHolder({ ...props, fullName });
   }
 }

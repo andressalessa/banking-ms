@@ -1,23 +1,20 @@
-import { DomainEvent } from '@core/events/domain-event';
-import { UniqueEntityID } from '@core/entities/unique-entity-id';
+import { BaseDomainEvent } from '@core/events/base-domain-event';
 
 export interface AccountCreatedPayload {
   accountId: string;
   holderName: string;
+  // Dado sensível: necessário para o replay. Fica só no event store de `accounts`;
+  // nunca propagar em eventos de integração nem em logs (ADR 0002, item 5).
   holderCpf: string;
   initialBalance: number;
 }
 
-export class AccountCreatedEvent implements DomainEvent {
-  public readonly occurredAt: Date;
-  public readonly payload: AccountCreatedPayload;
+export class AccountCreatedEvent extends BaseDomainEvent {
+  public readonly eventType = 'AccountCreated';
+  public readonly payload: Readonly<AccountCreatedPayload>;
 
-  constructor(payload: AccountCreatedPayload) {
-    this.occurredAt = new Date();
-    this.payload = payload;
-  }
-
-  getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.payload.accountId);
+  constructor(payload: AccountCreatedPayload, version: number) {
+    super(payload.accountId, version);
+    this.payload = Object.freeze({ ...payload });
   }
 }

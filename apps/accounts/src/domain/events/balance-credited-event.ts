@@ -1,21 +1,16 @@
-import { DomainEvent } from '@core/events/domain-event';
-import { UniqueEntityID } from '@core/entities/unique-entity-id';
+import { BaseDomainEvent } from '@core/events/base-domain-event';
 
 export interface BalanceCreditedPayload {
   accountId: string;
   amount: number;
 }
 
-export class BalanceCreditedEvent implements DomainEvent {
-  public readonly occurredAt: Date;
-  public readonly payload: BalanceCreditedPayload;
+export class BalanceCreditedEvent extends BaseDomainEvent {
+  public readonly eventType = 'BalanceCredited';
+  public readonly payload: Readonly<BalanceCreditedPayload>;
 
-  constructor(payload: BalanceCreditedPayload) {
-    this.occurredAt = new Date();
-    this.payload = payload;
-  }
-
-  getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.payload.accountId);
+  constructor(payload: BalanceCreditedPayload, version: number) {
+    super(payload.accountId, version);
+    this.payload = Object.freeze({ ...payload });
   }
 }

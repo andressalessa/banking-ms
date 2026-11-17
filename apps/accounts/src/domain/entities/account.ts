@@ -58,12 +58,15 @@ export class Account extends AggregateRoot<AccountProps> {
 
     if (isNewAccount) {
       account.addDomainEvent(
-        new AccountCreatedEvent({
-          accountId: account.id.toString(),
-          holderName: account.holder.fullName,
-          holderCpf: account.holder.cpf.value,
-          initialBalance: account.balance.amount,
-        }),
+        new AccountCreatedEvent(
+          {
+            accountId: account.id.toString(),
+            holderName: account.holder.fullName,
+            holderCpf: account.holder.cpf.value,
+            initialBalance: account.balance.amount,
+          },
+          account.nextVersion(),
+        ),
       );
     }
 
@@ -76,10 +79,13 @@ export class Account extends AggregateRoot<AccountProps> {
     this.props.balance = this.props.balance.add(amount);
     this.touch();
     this.addDomainEvent(
-      new BalanceCreditedEvent({
-        accountId: this.id.toString(),
-        amount: amount.amount,
-      }),
+      new BalanceCreditedEvent(
+        {
+          accountId: this.id.toString(),
+          amount: amount.amount,
+        },
+        this.nextVersion(),
+      ),
     );
   }
 
@@ -89,10 +95,13 @@ export class Account extends AggregateRoot<AccountProps> {
     this.props.balance = this.props.balance.subtract(amount);
     this.touch();
     this.addDomainEvent(
-      new BalanceDebitedEvent({
-        accountId: this.id.toString(),
-        amount: amount.amount,
-      }),
+      new BalanceDebitedEvent(
+        {
+          accountId: this.id.toString(),
+          amount: amount.amount,
+        },
+        this.nextVersion(),
+      ),
     );
   }
 

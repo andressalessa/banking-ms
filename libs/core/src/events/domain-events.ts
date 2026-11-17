@@ -52,10 +52,10 @@ export class DomainEvents {
 
   public static register(
     callback: DomainEventCallback,
-    eventClassName: string,
+    eventType: string,
   ) {
-    this.handlersMap[eventClassName] ??= [];
-    this.handlersMap[eventClassName].push(callback);
+    this.handlersMap[eventType] ??= [];
+    this.handlersMap[eventType].push(callback);
   }
 
   public static clearHandlers() {
@@ -67,9 +67,7 @@ export class DomainEvents {
   }
 
   private static async dispatch(event: DomainEvent): Promise<void> {
-    const eventClassName: string = event.constructor.name;
-
-    const handlers = this.handlersMap[eventClassName];
+    const handlers = this.handlersMap[event.eventType];
 
     if (handlers) {
       for (const handler of handlers) {

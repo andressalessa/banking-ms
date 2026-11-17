@@ -28,6 +28,12 @@ Separei dois tipos de evento, cada um com um dono:
 Fluxo resumido do débito:
 `transactions` → (REST/Temporal) → `accounts` (valida invariantes, grava `BalanceDebited` no event store) → resposta com saldo resultante → `transactions` (registra a transação + outbox) → Kafka (`DebitPerformed`) → consumidor de extrato (read model).
 
+5. **Dado sensível (CPF) no evento de agregado.** O `AccountCreated` mantém o CPF em claro porque o estado de `Account` é derivado só dos eventos (mascarar ou hashear impediria reconstruir o `Cpf` no replay e quebraria `findByCpf`/unicidade). O risco é contido assim:
+   - o evento de agregado vive apenas no `accounts_db` e nunca é publicado no Kafka nem acessado por outro serviço;
+   - os eventos de integração (`DebitPerformed`/`CreditPerformed`) não incluem CPF nem outros dados cadastrais;
+   - logs não devem imprimir o payload de `AccountCreated`.
+   - **Limitação conhecida:** como o event store é imutável, o CPF não pode ser apagado (direito à exclusão da LGPD). A evolução prevista é *crypto-shredding* (criptografar o dado pessoal com uma chave por conta e descartar a chave para "apagar"), fora do escopo deste PDI.
+
 ## Alternativas Consideradas
 - **`transactions` como dono do Event Store (eventos `DebitPerformed`/`CreditPerformed` como fonte da verdade do saldo).** Aproxima o evento da operação de negócio, mas `accounts` deixaria de ser dono do saldo (viola "contas mantém o saldo atual"), ou precisaria reconstruí-lo a partir de eventos de outro serviço, criando acoplamento e acesso cruzado a dados.
 - **Publicar no Kafka diretamente os eventos do event store de `accounts`.** Reduz um passo, mas expõe o modelo interno do agregado como contrato público, acopla consumidores ao schema do event store e mistura o extrato (responsabilidade de `transactions`) com `accounts`.

@@ -1,6 +1,7 @@
-import type { UniqueEntityID } from '../entities/unique-entity-id';
-
 export interface DomainEvent {
+  eventId: string;
+  eventType: string;
+  aggregateId: string;
+  version: number;
   occurredAt: Date;
-  getAggregateId(): UniqueEntityID;
 }

@@ -173,7 +173,7 @@ test('does not dispatch a creation event when reconstituting an account', () => 
     new UniqueEntityID('account-1'),
   );
 
-  expect(account.id.toValue()).toBe('account-1');
+  expect(account.id.toString()).toBe('account-1');
   expect(account.createdAt).toEqual(createdAt);
   expect(account.domainEvents).toHaveLength(0);
 });

@@ -80,6 +80,13 @@ apps/accounts/src/
 └── main.ts                   # Ponto de entrada da aplicação
 
 
+## A Regra de Ouro para validar sua estrutura
+Sempre que criar um arquivo novo, faça este teste mental de direção das dependências:
+- domain/ não importa nada de application/ ou infra/ (nem @nestjs/*).
+- application/ só importa de domain/ e @core.
+- infra/ importa de application/, domain/ e @nestjs/*.
+Se essa regra de importação for respeitada, sua Clean Architecture estará impecável.
+
 tsconfig.json
 
 {

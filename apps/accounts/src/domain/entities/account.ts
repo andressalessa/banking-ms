@@ -53,7 +53,14 @@ export class Account extends AggregateRoot<AccountProps> {
     const isNewAccount = !id;
 
     if (isNewAccount) {
-      account.addDomainEvent(new AccountCreatedEvent(account));
+      account.addDomainEvent(
+        new AccountCreatedEvent({
+          accountId: account.id.toString(),
+          holderName: account.holder.fullName,
+          holderCpf: account.holder.cpf.value,
+          initialBalance: account.balance.amount,
+        }),
+      );
     }
 
     return account;

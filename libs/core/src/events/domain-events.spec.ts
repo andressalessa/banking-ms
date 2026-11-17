@@ -1,18 +1,15 @@
 import { AggregateRoot } from '../entities/aggregate-root';
-import type { UniqueEntityID } from '../entities/unique-entity-id';
+import { BaseDomainEvent } from './base-domain-event';
 import type { DomainEvent } from './domain-event';
 import { DomainEvents } from './domain-events';
 
-class CustomAggregateCreated implements DomainEvent {
-  public ocurredAt: Date;
+class CustomAggregateCreated extends BaseDomainEvent {
+  public readonly eventType = 'CustomAggregateCreated';
   public aggregate: CustomAggregate;
 
-  constructor(aggregate: CustomAggregate) {
-    this.ocurredAt = new Date();
+  constructor(aggregate: CustomAggregate, version: number) {
+    super(aggregate.id.toString(), version);
     this.aggregate = aggregate;
-  }
-  public getAggregateId(): UniqueEntityID {
-    return this.aggregate.id;
   }
 }
 
@@ -20,7 +17,9 @@ class CustomAggregate extends AggregateRoot<null> {
   static create() {
     const aggregate = new CustomAggregate(null);
 
-    aggregate.addDomainEvent(new CustomAggregateCreated(aggregate));
+    aggregate.addDomainEvent(
+      new CustomAggregateCreated(aggregate, aggregate.nextVersion()),
+    );
 
     return aggregate;
   }
@@ -30,7 +29,7 @@ describe('domain events', () => {
   it('should be able to dispatch and listen to events', async () => {
     const callbackSpy = vi.fn<(event: DomainEvent) => void>();
 
-    DomainEvents.register(callbackSpy, CustomAggregateCreated.name);
+    DomainEvents.register(callbackSpy, 'CustomAggregateCreated');
 
     const aggregate = CustomAggregate.create();
 

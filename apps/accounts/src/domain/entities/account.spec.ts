@@ -129,6 +129,37 @@ describe('Account behavior', () => {
   });
 });
 
+describe('Account events', () => {
+  test('each operation emits the expected event with sequential versions', () => {
+    const account = Account.create({ holder: makeHolder(), balance: Money.create(1000) });
+
+    account.credit(Money.create(500));
+    account.debit(Money.create(200));
+
+    const events = account.domainEvents;
+    expect(events.map((e) => e.eventType)).toEqual([
+      'AccountCreated',
+      'BalanceCredited',
+      'BalanceDebited',
+    ]);
+    expect(events.map((e) => e.version)).toEqual([1, 2, 3]);
+    expect(events.every((e) => e.aggregateId === account.id.toString())).toBe(true);
+    expect(new Set(events.map((e) => e.eventId)).size).toBe(3);
+    expect(events.every((e) => e.occurredAt instanceof Date)).toBe(true);
+  });
+
+  test('event payload is immutable', () => {
+    const account = Account.create({ holder: makeHolder() });
+    account.credit(Money.create(100));
+    const event = account.domainEvents[1] as BalanceCreditedEvent;
+
+    expect(() => {
+      (event.payload as { amount: number }).amount = 999;
+    }).toThrow(TypeError);
+    expect(event.payload.amount).toBe(100);
+  });
+});
+
 test('does not dispatch a creation event when reconstituting an account', () => {
   const createdAt = new Date('2026-01-01T00:00:00.000Z');
 

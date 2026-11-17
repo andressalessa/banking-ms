@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'vitest';
-import { UniqueEntityID } from '@core/entities/unique-entity-id';
 import { AccountStatus } from '../enums/account-status';
 import { AccountBlockedError } from '../errors/account-blocked-error';
 import { InsufficientFundsError } from '../errors/insufficient-funds-error';
@@ -160,20 +159,51 @@ describe('Account events', () => {
   });
 });
 
-test('does not dispatch a creation event when reconstituting an account', () => {
-  const createdAt = new Date('2026-01-01T00:00:00.000Z');
+describe('Account.fromHistory', () => {
+  test('rebuilds the exact state from events, without pending events', () => {
+    const account = Account.create({ holder: makeHolder(), balance: Money.create(1000) });
+    account.credit(Money.create(500));
+    account.debit(Money.create(200));
+    account.block();
+    account.activate();
 
-  const account = Account.create(
-    {
-      holder: makeHolder(),
-      balance: Money.create(1500),
-      createdAt,
-      updatedAt: null,
-    },
-    new UniqueEntityID('account-1'),
-  );
+    const restored = Account.fromHistory(account.domainEvents);
 
-  expect(account.id.toString()).toBe('account-1');
-  expect(account.createdAt).toEqual(createdAt);
-  expect(account.domainEvents).toHaveLength(0);
+    expect(restored.id.equals(account.id)).toBe(true);
+    expect(restored.balance.amount).toBe(1300);
+    expect(restored.status).toBe(AccountStatus.ACTIVE);
+    expect(restored.holder.cpf.value).toBe('52998224725');
+    expect(restored.holder.email.value).toBe('ada@lovelace.com');
+    expect(restored.createdAt).toEqual(account.createdAt);
+    expect(restored.updatedAt).toEqual(account.updatedAt);
+    expect(restored.version).toBe(5);
+    expect(restored.domainEvents).toHaveLength(0);
+  });
+
+  test('new events continue from the restored version', () => {
+    const account = Account.create({ holder: makeHolder() });
+    const restored = Account.fromHistory(account.domainEvents);
+
+    restored.credit(Money.create(100));
+
+    expect(restored.domainEvents[0].version).toBe(2);
+  });
+
+  test('blocked state survives the replay', () => {
+    const account = Account.create({ holder: makeHolder() });
+    account.block();
+
+    const restored = Account.fromHistory(account.domainEvents);
+
+    expect(restored.status).toBe(AccountStatus.BLOCKED);
+    expect(() => restored.credit(Money.create(10))).toThrow(AccountBlockedError);
+  });
+
+  test('rejects a history that does not start with AccountCreated', () => {
+    const account = Account.create({ holder: makeHolder() });
+    account.credit(Money.create(100));
+
+    expect(() => Account.fromHistory(account.domainEvents.slice(1))).toThrow();
+    expect(() => Account.fromHistory([])).toThrow();
+  });
 });

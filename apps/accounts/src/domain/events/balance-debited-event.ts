@@ -1,4 +1,4 @@
-import { BaseDomainEvent } from '@core/events/base-domain-event';
+import { BaseDomainEvent, type RestoredEventMeta } from '@core/events/base-domain-event';
 
 export interface BalanceDebitedPayload {
   accountId: string;
@@ -9,8 +9,8 @@ export class BalanceDebitedEvent extends BaseDomainEvent {
   public readonly eventType = 'BalanceDebited';
   public readonly payload: Readonly<BalanceDebitedPayload>;
 
-  constructor(payload: BalanceDebitedPayload, version: number) {
-    super(payload.accountId, version);
+  constructor(payload: BalanceDebitedPayload, version: number, restored?: RestoredEventMeta) {
+    super(payload.accountId, version, restored);
     this.payload = Object.freeze({ ...payload });
   }
 }

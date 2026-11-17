@@ -21,6 +21,11 @@ export abstract class AggregateRoot<Props> extends Entity<Props> {
     return this._version + 1;
   }
 
+  // usado ao reconstruir o agregado a partir do histórico (replay)
+  protected restoreVersion(version: number): void {
+    this._version = version;
+  }
+
   // anota que o evento existe (não faz o disparo ainda)
   protected addDomainEvent(domainEvent: DomainEvent): void {
     this._version = domainEvent.version;

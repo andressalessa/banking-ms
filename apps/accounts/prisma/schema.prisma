@@ -1,0 +1,35 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/infra/database/generated"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Event store do agregado Account: append-only (UPDATE/DELETE bloqueados por trigger na migration).
+// `UNIQUE(aggregate_id, version)` implementa o controle otimista de concorrência.
+model AccountEvent {
+  eventId       String   @id @map("event_id")
+  aggregateId   String   @map("aggregate_id")
+  aggregateType String   @map("aggregate_type")
+  version       Int
+  eventType     String   @map("event_type")
+  payload       Json
+  occurredAt    DateTime @map("occurred_at") @db.Timestamptz(3)
+  metadata      Json
+
+  @@unique([aggregateId, version])
+  @@map("account_events")
+}
+
+// Índice de unicidade/busca por CPF, gravado na mesma transação do evento de criação.
+// Não guarda saldo nem estado da conta.
+model AccountCpfRegistry {
+  cpf       String @id @db.VarChar(11)
+  accountId String @unique @map("account_id")
+
+  @@map("account_cpf_registry")
+}

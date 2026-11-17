@@ -7,5 +7,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    testTimeout: 30_000,
   },
 });

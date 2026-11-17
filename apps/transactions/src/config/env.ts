@@ -1,13 +1,36 @@
-import { z } from 'zod';
+import { plainToInstance } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsUrl, Max, Min, validateSync } from 'class-validator';
 
-export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  TRANSACTIONS_PORT: z.coerce.number().int().positive().default(3002),
-  TRANSACTIONS_DATABASE_URL: z.url(),
-});
+enum NodeEnv {
+  Development = 'development',
+  Test = 'test',
+  Production = 'production',
+}
 
-export type Env = z.infer<typeof envSchema>;
+export class Env {
+  @IsEnum(NodeEnv)
+  @IsOptional()
+  NODE_ENV: NodeEnv = NodeEnv.Development;
+
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  @IsOptional()
+  TRANSACTIONS_PORT: number = 3002;
+
+  @IsUrl({ protocols: ['postgres', 'postgresql'], require_tld: false })
+  @IsNotEmpty()
+  TRANSACTIONS_DATABASE_URL: string;
+}
 
 export function validateEnv(config: Record<string, unknown>): Env {
-  return envSchema.parse(config);
+  const env = plainToInstance(Env, config, {
+    enableImplicitConversion: true,
+    exposeDefaultValues: true,
+  });
+  const errors = validateSync(env, { skipMissingProperties: false });
+  if (errors.length > 0) {
+    throw new Error(`Invalid environment variables:\n${errors.map((e) => Object.values(e.constraints ?? {}).join(', ')).join('\n')}`);
+  }
+  return env;
 }

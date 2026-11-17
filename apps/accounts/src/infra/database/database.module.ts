@@ -12,6 +12,6 @@ import { PrismaService } from './prisma.service.js';
     { provide: AccountEventStore, useClass: PrismaAccountEventStore },
     { provide: AccountsRepository, useClass: EventStoreAccountsRepository },
   ],
-  exports: [AccountsRepository],
+  exports: [AccountsRepository, PrismaService],
 })
 export class DatabaseModule {}

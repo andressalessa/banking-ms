@@ -17,19 +17,19 @@ Separei dois tipos de evento, cada um com um dono:
    - `Account` apenas aplica `+/-` ao saldo e protege invariantes (saldo não negativo, conta ativa). Não conhece o conceito de transação, tipo, motivo ou saga.
 
 2. **Eventos de integração (Kafka) — dono: `transactions`.**
-   - Após `accounts` confirmar a mutação do saldo, `transactions` registra a transação e publica `DebitoRealizado`/`CreditoRealizado` no Kafka (padrão Transactional Outbox, chave de partição = `accountId`).
+   - Após `accounts` confirmar a mutação do saldo, `transactions` registra a transação e publica `DebitPerformed`/`CreditPerformed` no Kafka (padrão Transactional Outbox, chave de partição = `accountId`).
    - `transactions` mantém o read model do extrato, projetado de forma assíncrona a partir desses eventos (CQRS), com consumo idempotente por `eventId`.
    - O payload é mínimo (ids, valor, tipo, saldo resultante, timestamps) e não inclui dados cadastrais como CPF.
 
 3. **Os dois contratos são independentes.** Eventos de agregado não são publicados diretamente no Kafka, e eventos de integração não são gravados no event store. Cada um tem seu próprio versionamento.
 
-4. **Nomenclatura.** Eventos de agregado em inglês, como já implementados. Eventos de integração com os nomes do enunciado (`DebitoRealizado`, `CreditoRealizado`), o que mantém a rastreabilidade com os requisitos.
+4. **Nomenclatura.** Todo o código é em inglês (padrão de mercado), incluindo os eventos de integração; apenas a documentação é em português. Eventos de agregado: `AccountCreated`, `BalanceCredited`, `BalanceDebited`. Eventos de integração: `DebitPerformed` e `CreditPerformed`, equivalentes em inglês de `DebitoRealizado`/`CreditoRealizado` do enunciado (a equivalência fica registrada aqui para manter a rastreabilidade com os requisitos).
 
 Fluxo resumido do débito:
-`transactions` → (REST/Temporal) → `accounts` (valida invariantes, grava `BalanceDebited` no event store) → resposta com saldo resultante → `transactions` (registra a transação + outbox) → Kafka (`DebitoRealizado`) → consumidor de extrato (read model).
+`transactions` → (REST/Temporal) → `accounts` (valida invariantes, grava `BalanceDebited` no event store) → resposta com saldo resultante → `transactions` (registra a transação + outbox) → Kafka (`DebitPerformed`) → consumidor de extrato (read model).
 
 ## Alternativas Consideradas
-- **`transactions` como dono do Event Store (eventos `DebitoRealizado`/`CreditoRealizado` como fonte da verdade do saldo).** Aproxima o evento da operação de negócio, mas `accounts` deixaria de ser dono do saldo (viola "contas mantém o saldo atual"), ou precisaria reconstruí-lo a partir de eventos de outro serviço, criando acoplamento e acesso cruzado a dados.
+- **`transactions` como dono do Event Store (eventos `DebitPerformed`/`CreditPerformed` como fonte da verdade do saldo).** Aproxima o evento da operação de negócio, mas `accounts` deixaria de ser dono do saldo (viola "contas mantém o saldo atual"), ou precisaria reconstruí-lo a partir de eventos de outro serviço, criando acoplamento e acesso cruzado a dados.
 - **Publicar no Kafka diretamente os eventos do event store de `accounts`.** Reduz um passo, mas expõe o modelo interno do agregado como contrato público, acopla consumidores ao schema do event store e mistura o extrato (responsabilidade de `transactions`) com `accounts`.
 - **Um único conjunto de eventos para as duas finalidades.** Mais simples no papel, porém força um único contrato a servir persistência (precisa de `version`, estado completo do agregado) e integração (precisa ser estável, mínimo e sem dados sensíveis).
 

@@ -14,8 +14,6 @@ import type {
 export interface HttpAccountsGatewayOptions {
   baseUrl: string;
   timeoutMs: number;
-  /** Injetável para testes; padrão: `fetch` global do Node. */
-  fetch?: typeof fetch;
 }
 
 /**
@@ -26,17 +24,18 @@ export interface HttpAccountsGatewayOptions {
 export class HttpAccountsGateway extends AccountsGateway {
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
-  private readonly fetchFn: typeof fetch;
 
   constructor(options: HttpAccountsGatewayOptions) {
     super();
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
     this.timeoutMs = options.timeoutMs;
-    this.fetchFn = options.fetch ?? fetch;
   }
 
   async getBalance(accountId: string): Promise<number> {
-    const { balance } = await this.request<AccountsBalanceResponse>('GET', `/accounts/${accountId}/balance`);
+    const { balance } = await this.request<AccountsBalanceResponse>(
+      'GET',
+      `/accounts/${accountId}/balance`,
+    );
     return balance;
   }
 
@@ -48,7 +47,11 @@ export class HttpAccountsGateway extends AccountsGateway {
     return this.changeBalance(accountId, 'debit', amount);
   }
 
-  private async changeBalance(accountId: string, operation: 'credit' | 'debit', amount: Money) {
+  private async changeBalance(
+    accountId: string,
+    operation: 'credit' | 'debit',
+    amount: Money,
+  ) {
     const { balance } = await this.request<AccountsChangeBalanceResponse>(
       'POST',
       `/internal/accounts/${accountId}/${operation}`,
@@ -57,12 +60,19 @@ export class HttpAccountsGateway extends AccountsGateway {
     return balance;
   }
 
-  private async request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     let response: Response;
     try {
-      response = await this.fetchFn(`${this.baseUrl}${path}`, {
+      response = await fetch(`${this.baseUrl}${path}`, {
         method,
-        headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+        headers:
+          body === undefined
+            ? undefined
+            : { 'content-type': 'application/json' },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: AbortSignal.timeout(this.timeoutMs),
       });
@@ -80,12 +90,17 @@ export class HttpAccountsGateway extends AccountsGateway {
   private async toDomainError(response: Response): Promise<Error> {
     if (response.status >= 500) return new AccountsServiceUnavailableError();
 
-    const error = (await response.json().catch(() => undefined)) as Partial<AccountsErrorResponse> | undefined;
+    const error = (await response.json().catch(() => undefined)) as
+      Partial<AccountsErrorResponse> | undefined;
     const code = error?.code ?? 'UNKNOWN';
 
-    if (response.status === 404 && code === 'ACCOUNT_NOT_FOUND') return new AccountNotFoundError();
+    if (response.status === 404 && code === 'ACCOUNT_NOT_FOUND')
+      return new AccountNotFoundError();
     if (code === 'INSUFFICIENT_FUNDS') return new InsufficientFundsError();
     if (code === 'ACCOUNT_BLOCKED') return new AccountBlockedError();
-    return new AccountsRequestRejectedError(code, error?.message ?? `HTTP ${response.status}`);
+    return new AccountsRequestRejectedError(
+      code,
+      error?.message ?? `HTTP ${response.status}`,
+    );
   }
 }

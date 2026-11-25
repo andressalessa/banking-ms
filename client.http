@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:3001
+
+# @name create_account
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+
+{
+    "fullName": "Dêssa Lessa",
+    "cpf": "529.982.247-25",
+    "email": "s.andressalessa@gmail.com"
+}
+
+###
+
+@baseUrlTransactions = http://localhost:3002
+
+# @name create_transaction
+POST {{baseUrlTransactions}}/transactions/credit
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+    "accountId": "3acbd3e2-a5b9-40e4-b694-73fd6f0b63db",
+    "amount": 100050
+}

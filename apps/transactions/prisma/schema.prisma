@@ -1,0 +1,52 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "./generated"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  COMPENSATED
+}
+
+// Estado do agregado Transaction (persistido diretamente, não é event-sourced).
+// `amount` em centavos inteiros. `idempotency_key` único garante idempotência no registro.
+model Transaction {
+  id             String            @id
+  accountId      String            @map("account_id")
+  type           TransactionType
+  amount         Int
+  status         TransactionStatus
+  idempotencyKey String            @unique @map("idempotency_key")
+  createdAt      DateTime          @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime?         @map("updated_at") @db.Timestamptz(3)
+
+  @@index([accountId, createdAt])
+  @@map("transactions")
+}
+
+// Transactional Outbox: eventos de integração gravados na mesma transação do estado
+// e publicados depois no Kafka. `id` é o eventId (deduplicação no consumo).
+model OutboxEvent {
+  id          String    @id
+  aggregateId String    @map("aggregate_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  occurredAt  DateTime  @map("occurred_at") @db.Timestamptz(3)
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+
+  @@index([publishedAt, occurredAt])
+  @@map("outbox_events")
+}

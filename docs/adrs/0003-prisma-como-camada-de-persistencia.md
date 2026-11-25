@@ -15,7 +15,7 @@ Adotei o **Prisma (v7)** com o driver adapter `@prisma/adapter-pg`, usado para i
   - `account_cpf_registry` — `cpf` único → `account_id`; é apenas um índice de unicidade/busca (um event store não consulta por campo), gravado na mesma transação do evento de criação da conta. Não guarda saldo nem estado.
 - O domínio expõe a porta `AccountEventStore` (`append` com versão esperada, `load` a partir de uma versão e busca de conta por CPF); a implementação com Prisma fica só em `infra/database/`. O `AccountsRepository` é implementado sobre essa porta (`EventStoreAccountsRepository`): carrega por replay (`Account.fromHistory`) e salva por `append`, e uma implementação in-memory da porta serve aos testes. Domínio e casos de uso não conhecem o Prisma.
 - O `append` usa `$transaction` (eventos + registry). A versão atual é conferida dentro da transação e, como proteção contra corrida, a violação de unicidade em `(aggregate_id, version)` também vira `ConcurrencyError`; violação do CPF vira o erro de CPF já cadastrado.
-- Client tipado gerado em `infra/database/generated` (fora do git; gerado no `postinstall`). A conexão lê `ACCOUNTS_DATABASE_URL`.
+- Client tipado gerado em `prisma/generated` de cada serviço (fora do git; gerado no `postinstall`). A conexão lê `ACCOUNTS_DATABASE_URL`.
 - Database-per-service: cada serviço terá seu próprio schema, config e client; só `accounts` conhece `accounts_db`.
 
 ## Por que o Prisma ajuda no KISS

@@ -29,7 +29,10 @@
     "prisma:accounts:generate": "prisma generate --config apps/accounts/prisma.config.ts",
     "prisma:accounts:migrate:dev": "prisma migrate dev --config apps/accounts/prisma.config.ts",
     "prisma:accounts:migrate:deploy": "prisma migrate deploy --config apps/accounts/prisma.config.ts",
-    "postinstall": "npm run prisma:accounts:generate"
+    "prisma:transactions:generate": "prisma generate --config apps/transactions/prisma.config.ts",
+    "prisma:transactions:migrate:dev": "prisma migrate dev --config apps/transactions/prisma.config.ts",
+    "prisma:transactions:migrate:deploy": "prisma migrate deploy --config apps/transactions/prisma.config.ts",
+    "postinstall": "npm run prisma:accounts:generate && npm run prisma:transactions:generate"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

@@ -3,7 +3,7 @@ import { ConcurrencyError } from '@accounts/domain/errors/concurrency-error';
 import { CpfAlreadyRegisteredError } from '@accounts/domain/errors/cpf-already-registered-error';
 import type { StoredAccountEvent } from '@accounts/domain/events/account-event-serializer';
 import { AccountEventStore } from '@accounts/domain/repositories/account-event-store';
-import { Prisma } from './generated/client.js';
+import { Prisma } from '../../../prisma/generated/client.js';
 import { PrismaService } from './prisma.service.js';
 
 const UNIQUE_VIOLATION = 'P2002';

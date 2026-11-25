@@ -7,8 +7,8 @@ import { TransactionsRepository } from '@transactions/domain/repositories/transa
 import { IdempotencyKey } from '@transactions/domain/value-objects/idempotency-key';
 import { Money } from '@transactions/domain/value-objects/money';
 import { TransactionId } from '@transactions/domain/value-objects/transaction-id';
-import { Prisma } from './generated/client.js';
-import type { Transaction as TransactionRow } from './generated/client.js';
+import { Prisma } from '../../../prisma/generated/client.js';
+import type { Transaction as TransactionRow } from '../../../prisma/generated/client.js';
 import { PrismaService } from './prisma.service.js';
 
 function toRow(transaction: Transaction) {

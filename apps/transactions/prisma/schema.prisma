@@ -36,3 +36,17 @@ model Transaction {
   @@index([accountId, createdAt])
   @@map("transactions")
 }
+
+// Transactional Outbox: eventos de integração gravados na mesma transação do estado
+// e publicados depois no Kafka. `id` é o eventId (deduplicação no consumo).
+model OutboxEvent {
+  id          String    @id
+  aggregateId String    @map("aggregate_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  occurredAt  DateTime  @map("occurred_at") @db.Timestamptz(3)
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(3)
+
+  @@index([publishedAt, occurredAt])
+  @@map("outbox_events")
+}

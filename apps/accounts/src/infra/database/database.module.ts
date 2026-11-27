@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { AccountEventStore } from '@accounts/domain/repositories/account-event-store';
 import { AccountsRepository } from '@accounts/domain/repositories/accounts-repository';
-import { EventStoreAccountsRepository } from './event-store-accounts.repository.js';
-import { PrismaAccountEventStore } from './prisma-account-event-store.js';
+import { EventStoreAccountsRepository } from './repositories/event-store-accounts.repository.js';
+import { PrismaAccountEventStore } from './repositories/prisma-account-event-store.js';
 import { PrismaService } from './prisma.service.js';
 
 @Global()

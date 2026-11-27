@@ -77,7 +77,7 @@ O `ConcurrencyError` é um novo erro de domínio, lançado quando a versão espe
 - **Infra:** `PrismaService`, `DatabaseModule` (importado no `AccountsModule`) e `env.ts` para a configuração.
 
 ## Passo 6: implementação do Event Store
-Arquivo: `prisma-account-event-store.ts`
+Arquivo: `infra/database/repositories/prisma-account-event-store.ts` (o mapeamento linha/evento fica em `mappers/prisma-account-event.mapper.ts`)
 
 O `append` roda numa transação:
 1. Lê a última versão e compara com `expectedVersion`. Se for diferente, lança `ConcurrencyError`.
@@ -85,7 +85,7 @@ O `append` roda numa transação:
 3. Insere os eventos. Se houver violação de unicidade por corrida, também lança `ConcurrencyError`.
 
 ## Passo 7: repositório event-sourced
-Arquivo: `event-store-accounts.repository.ts`
+Arquivo: `infra/database/repositories/event-store-accounts.repository.ts`
 
 - `findById` carrega os eventos, desserializa e chama `Account.fromHistory`.
 - `findByCpf` acha o id pelo registro de CPF e carrega a conta.

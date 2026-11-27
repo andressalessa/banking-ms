@@ -7,7 +7,7 @@ import { Cpf } from '@accounts/domain/value-objects/cpf';
 import { Email } from '@accounts/domain/value-objects/email';
 import { Money } from '@accounts/domain/value-objects/money';
 import { DomainEvents } from '@core/events/domain-events';
-import { InMemoryAccountEventStore } from '../../test/repositories/in-memory-account-event-store';
+import { InMemoryAccountEventStore } from '../../../test/repositories/in-memory-account-event-store';
 import { EventStoreAccountsRepository } from './event-store-accounts.repository';
 
 const makeAccount = (cpf = '52998224725') =>

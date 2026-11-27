@@ -3,8 +3,9 @@ import { ConcurrencyError } from '@accounts/domain/errors/concurrency-error';
 import { CpfAlreadyRegisteredError } from '@accounts/domain/errors/cpf-already-registered-error';
 import type { StoredAccountEvent } from '@accounts/domain/events/account-event-serializer';
 import { AccountEventStore } from '@accounts/domain/repositories/account-event-store';
-import { Prisma } from '../../../prisma/generated/client.js';
-import { PrismaService } from './prisma.service.js';
+import { Prisma } from '../../../../prisma/generated/client.js';
+import { PrismaAccountEventMapper } from '../mappers/prisma-account-event.mapper.js';
+import { PrismaService } from '../prisma.service.js';
 
 const UNIQUE_VIOLATION = 'P2002';
 
@@ -49,16 +50,7 @@ export class PrismaAccountEventStore extends AccountEventStore {
 
       try {
         await tx.accountEvent.createMany({
-          data: events.map((event) => ({
-            eventId: event.eventId,
-            aggregateId: event.aggregateId,
-            aggregateType: event.aggregateType,
-            version: event.version,
-            eventType: event.eventType,
-            payload: event.payload as Prisma.InputJsonObject,
-            occurredAt: event.occurredAt,
-            metadata: event.metadata,
-          })),
+          data: events.map((event) => PrismaAccountEventMapper.toPersistence(event)),
         });
       } catch (error) {
         // corrida: outro append gravou a mesma versão entre a leitura e a escrita
@@ -73,16 +65,7 @@ export class PrismaAccountEventStore extends AccountEventStore {
       orderBy: { version: 'asc' },
     });
 
-    return rows.map((row) => ({
-      eventId: row.eventId,
-      aggregateId: row.aggregateId,
-      aggregateType: row.aggregateType,
-      version: row.version,
-      eventType: row.eventType,
-      payload: row.payload as Record<string, unknown>,
-      occurredAt: row.occurredAt,
-      metadata: row.metadata as StoredAccountEvent['metadata'],
-    }));
+    return rows.map((row) => PrismaAccountEventMapper.toStored(row));
   }
 
   async findAggregateIdByCpf(cpf: string): Promise<string | null> {

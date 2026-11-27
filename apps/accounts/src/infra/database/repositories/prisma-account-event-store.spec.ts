@@ -8,9 +8,9 @@ import { Cpf } from '@accounts/domain/value-objects/cpf';
 import { Email } from '@accounts/domain/value-objects/email';
 import { Money } from '@accounts/domain/value-objects/money';
 import { EventStoreAccountsRepository } from './event-store-accounts.repository';
-import { PrismaClient } from '../../../prisma/generated/client.js';
+import { PrismaClient } from '../../../../prisma/generated/client.js';
 import { PrismaAccountEventStore } from './prisma-account-event-store';
-import type { PrismaService } from './prisma.service';
+import type { PrismaService } from '../prisma.service';
 
 // Integração: exige Postgres com as migrations aplicadas.
 // Ex.: ACCOUNTS_TEST_DATABASE_URL=$ACCOUNTS_DATABASE_URL npm test

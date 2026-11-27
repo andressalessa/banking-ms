@@ -5,9 +5,9 @@ import { TransactionStatus } from '@transactions/domain/enums/transaction-status
 import { TransactionType } from '@transactions/domain/enums/transaction-type';
 import { IdempotencyKey } from '@transactions/domain/value-objects/idempotency-key';
 import { Money } from '@transactions/domain/value-objects/money';
-import { PrismaClient } from '../../../prisma/generated/client.js';
+import { PrismaClient } from '../../../../prisma/generated/client.js';
 import { PrismaTransactionsRepository } from './prisma-transactions.repository';
-import type { PrismaService } from './prisma.service';
+import type { PrismaService } from '../prisma.service';
 
 // Integração: exige Postgres com as migrations aplicadas.
 // Ex.: TRANSACTIONS_TEST_DATABASE_URL=$TRANSACTIONS_DATABASE_URL npm test
